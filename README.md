@@ -1,4 +1,10 @@
 # 💊 Assignment 09: Pharmacy & Healthcare Store API with RBAC & JWT
+
+---
+
+## 🌐 Live Production Deployment on Render
+- **Live Production URL:** [https://assignmentsexpressjsmongodbsupabasefireb-9hre.onrender.com](https://assignmentsexpressjsmongodbsupabasefireb-9hre.onrender.com)
+
 > **Track:** Backend Development | **Level:** Intermediate | **Estimated Time:** 6–8 Hours  
 > **Tech Stack:** Node.js, Express.js, MongoDB Atlas, Mongoose, JWT, bcryptjs, dotenv
 
