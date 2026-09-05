@@ -3,7 +3,8 @@
 > **Tech Stack:** Node.js, Express.js, MongoDB Atlas, Mongoose, JWT, bcryptjs, dotenv
 
 ---
-
+### Live Link : https://assignment-9-pharmacy-management-api.onrender.com/
+---
 ## 📌 1. Objective & Overview
 
 Build a production-grade **Pharmacy Management & Medicine Ordering REST API** using **MongoDB Atlas** and **JWT-based Role-Based Access Control (RBAC)**. Students will model multi-role user workflows across three user tiers: `Admin`, `Pharmacist`, and `Customer`, enforcing strict permission barriers for sensitive operations like adding restricted prescription medicines and approving drug orders.
