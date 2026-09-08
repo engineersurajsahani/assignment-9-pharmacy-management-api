@@ -108,129 +108,9 @@ Aryaa_Bhadane/
 - **Expiring-Soon Report (`GET /api/reports/expiring-soon`)**: Calculates days remaining (`daysUntilExpiry`) and financial risk value (`stockQuantity * price`), producing grouped summary metrics and category breakdowns via `$facet`.
 - **Low-Stock Report (`GET /api/reports/low-stock`)**: Identifies items at or below a stock threshold and computes the required replenishment deficit.
 
----
+--
 
-## 🚀 5. Local Setup & Installation
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or newer)
-- A [MongoDB Atlas](https://www.mongodb.com/atlas/database) account and cluster
-
-### Steps
-
-1. **Navigate to the project directory**:
-   ```bash
-   cd Aryaa_Bhadane
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Create a `.env` file from `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Populate `.env` variables**:
-   ```env
-   PORT=5000
-   NODE_ENV=development
-   MONGO_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/pharmacy_db?retryWrites=true&w=majority
-   JWT_SECRET=super_secret_pharmacy_jwt_key_2025
-   JWT_EXPIRE=24h
-   ADMIN_REGISTRATION_KEY=pharmacy_admin_secure_key_2025
-   ```
-
-5. **Run the application**:
-   - **Development mode (auto-reload)**:
-     ```bash
-     npm run dev
-     ```
-   - **Production mode**:
-     ```bash
-     npm start
-     ```
-
-6. **Verify server status**:
-   Open `http://localhost:5000/health` in your browser or Postman.
-
----
-
-## 🌐 6. Step-by-Step Render Deployment Guide
-
-Follow these steps to deploy this API to [Render](https://render.com/) as a live Web Service.
-
-### Step 1: Set Up MongoDB Atlas Database & Get Connection URI
-1. Log in to [MongoDB Atlas](https://cloud.mongodb.com/).
-2. Create a free **M0 Shared Cluster** (e.g. in AWS / closest region).
-3. Under **Security > Database Access**:
-   - Click **Add New Database User**.
-   - Select **Password Authentication**.
-   - Create a username (e.g. `pharmacy_admin`) and a secure password.
-   - Assign the **Read and write to any database** role.
-4. Under **Security > Network Access**:
-   - Click **Add IP Address**.
-   - Choose **Allow Access from Anywhere (`0.0.0.0/0`)** so Render cloud instances can connect.
-5. Under **Deployment > Database**:
-   - Click **Connect** on your cluster.
-   - Choose **Drivers** (Node.js).
-   - Copy the connection string. It will look like:
-     ```text
-     mongodb+srv://pharmacy_admin:<password>@cluster0.abcde.mongodb.net/pharmacy_db?retryWrites=true&w=majority
-     ```
-   - Replace `<password>` with your actual database user password and specify the database name (`pharmacy_db`).
-
-### Step 2: Push Repository to GitHub
-Ensure all code inside `assignment-9-pharmacy-management-api` is committed and pushed to your GitHub repository:
-```bash
-git add .
-git commit -m "feat: complete pharmacy management api with rbac"
-git push origin main
-```
-
-### Step 3: Create a Web Service on Render
-1. Log in to [Render Dashboard](https://dashboard.render.com/).
-2. Click **New +** and select **Web Service**.
-3. Connect your GitHub account and select the repository `assignment-9-pharmacy-management-api`.
-4. Configure the Web Service settings:
-   - **Name**: `pharmacy-management-api` (or your preferred name)
-   - **Region**: Choose the region closest to your MongoDB Atlas cluster (e.g., Frankfurt / Oregon / Singapore).
-   - **Branch**: `main`
-   - **Root Directory**: `Aryaa_Bhadane` *(Critical: specifies the subfolder)*
-   - **Runtime**: `Node`
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-   - **Instance Type**: `Free`
-
-### Step 4: Configure Environment Variables in Render
-In the **Environment Variables** section on the Render setup page (or under **Settings > Environment**):
-
-| Key | Example Value | Description |
-|---|---|---|
-| `NODE_ENV` | `production` | Production environment flag |
-| `PORT` | `10000` *(Render sets this automatically)* | Port for Express server |
-| `MONGO_URI` | `mongodb+srv://pharmacy_admin:YOUR_PASSWORD@cluster0.abcde.mongodb.net/pharmacy_db?retryWrites=true&w=majority` | Your MongoDB Atlas connection URI |
-| `JWT_SECRET` | `generate_a_random_32_char_secret_key_here` | Secret key for signing JWT tokens |
-| `JWT_EXPIRE` | `24h` | Token expiration time |
-| `ADMIN_REGISTRATION_KEY` | `pharmacy_admin_secure_key_2025` | Secret key for staff registration |
-
-> 💡 **Tip to generate a secure `JWT_SECRET`**:
-> Run in your terminal: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-
-### Step 5: Deploy & Verify
-1. Click **Create Web Service**.
-2. Render will build and deploy your service.
-3. Check the **Logs** tab. You should see:
-   ```text
-   Pharmacy API Server running in production mode on port 10000
-   MongoDB Atlas Connected successfully: cluster0-shard-00-00.abcde.mongodb.net / Database: pharmacy_db
-   ```
-4. Access your live API endpoint at `https://<your-render-service-name>.onrender.com/health`.
-
----
 
 ## 🧪 7. Postman Collection & Testing Guide
 
@@ -293,13 +173,7 @@ A complete Postman collection is included at [`Aryaa_Bhadane/postman_collection.
 
 ---
 
-## 🏆 9. Grading Rubric Compliance
 
-| Rubric Component | Marks | Implementation in Codebase |
-|---|:---:|---|
-| **MongoDB Atlas Setup & Schema Modeling** | 25 | Cloud-connected via `config/db.js`, indexed schemas in `models/Medicine.js`, `models/Order.js`, and `models/User.js` with validations. |
-| **JWT RBAC Middleware Hierarchy** | 25 | Modular `middleware/auth.js` + `middleware/roleGuard.js` supporting multi-role hierarchy (`admin`, `pharmacist`, `customer`) with 401/403 status codes. |
-| **Medicine Inventory CRUD & Expiring Stock Filters** | 20 | Complete CRUD operations in `controllers/medicineController.js`, search/regex category filtering, and expiring queries. |
-| **Order Processing & Atomic Stock Deduction Logic** | 15 | Implemented in `controllers/orderController.js` with server-side pricing, prescription checking, and conditional `$inc` atomic decrements with rollback safety. |
-| **Architecture, Error Handling & Code Quality** | 15 | Layered MVC architecture, `errorHandler.js` handling Mongoose CastError, ValidationError, and duplicate keys, thorough inline comments, and complete documentation. |
-| **Total** | **100** | **Fully Satisfied** |
+
+
+DEPLOYMENT LINK: https://pharmacy-management-api-mhuc.onrender.com/
