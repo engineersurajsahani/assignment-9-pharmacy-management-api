@@ -1,0 +1,482 @@
+{
+	"info": {
+		"_postman_id": "pharmacy-api-rbac-collection-id",
+		"name": "Pharmacy Management REST API - RBAC & JWT",
+		"description": "Postman Collection for Pharmacy & Healthcare Store REST API featuring Role-Based Access Control (Admin, Pharmacist, Customer).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "customer_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "pharmacist_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_secret_key",
+			"value": "admin_secret_pharmacy_2026",
+			"type": "string"
+		},
+		{
+			"key": "medicine_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "order_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth Routes",
+			"item": [
+				{
+					"name": "1. Register Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Alice Customer\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "2. Register Staff - Pharmacist",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bob Pharmacist\",\n  \"email\": \"bob.pharmacist@pharmacy.com\",\n  \"password\": \"pharmacist123\",\n  \"role\": \"pharmacist\",\n  \"adminSecretKey\": \"{{admin_secret_key}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register-staff",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register-staff"]
+						}
+					}
+				},
+				{
+					"name": "3. Register Staff - Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Charlie Admin\",\n  \"email\": \"charlie.admin@pharmacy.com\",\n  \"password\": \"admin123456\",\n  \"role\": \"admin\",\n  \"adminSecretKey\": \"{{admin_secret_key}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register-staff",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register-staff"]
+						}
+					}
+				},
+				{
+					"name": "4. Login Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('customer_token', jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "5. Login Pharmacist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('pharmacist_token', jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"bob.pharmacist@pharmacy.com\",\n  \"password\": \"pharmacist123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "6. Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set('admin_token', jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"charlie.admin@pharmacy.com\",\n  \"password\": \"admin123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "7. Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "profile"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Medicine Routes",
+			"item": [
+				{
+					"name": "1. Browse Catalog (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/medicines?search=Amox&category=Antibiotic",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medicines"],
+							"query": [
+								{
+									"key": "search",
+									"value": "Amox"
+								},
+								{
+									"key": "category",
+									"value": "Antibiotic"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "2. Add Medicine (Pharmacist / Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.medicine && jsonData.medicine._id) {",
+									"    pm.collectionVariables.set('medicine_id', jsonData.medicine._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{pharmacist_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Amoxicillin 500mg\",\n  \"brand\": \"GSK\",\n  \"category\": \"Antibiotic\",\n  \"dosageForm\": \"Capsule\",\n  \"price\": 15.50,\n  \"stockQuantity\": 100,\n  \"requiresPrescription\": true,\n  \"expiryDate\": \"2026-10-15T00:00:00.000Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/medicines",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medicines"]
+						}
+					}
+				},
+				{
+					"name": "3. Update Stock/Price (Pharmacist / Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{pharmacist_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"price\": 14.99,\n  \"stockQuantity\": 120\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/medicines/{{medicine_id}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medicines", "{{medicine_id}}"]
+						}
+					}
+				},
+				{
+					"name": "4. Get Expiring Medicines (Pharmacist / Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{pharmacist_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/medicines/expiring",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medicines", "expiring"]
+						}
+					}
+				},
+				{
+					"name": "5. Get Expiring Report (Pharmacist / Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{pharmacist_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reports/expiring-soon",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reports", "expiring-soon"]
+						}
+					}
+				},
+				{
+					"name": "6. Delete Drug (Admin Only)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/medicines/{{medicine_id}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medicines", "{{medicine_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Order Routes",
+			"item": [
+				{
+					"name": "1. Place Order (Customer Only)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.order && jsonData.order._id) {",
+									"    pm.collectionVariables.set('order_id', jsonData.order._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"items\": [\n    {\n      \"medicineId\": \"{{medicine_id}}\",\n      \"quantity\": 2\n    }\n  ],\n  \"prescriptionNotes\": \"Take 1 capsule twice daily with meals\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders"]
+						}
+					}
+				},
+				{
+					"name": "2. View My Orders (Customer Only)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customer_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/orders/my-orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders", "my-orders"]
+						}
+					}
+				},
+				{
+					"name": "3. List All Orders (Pharmacist / Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{pharmacist_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders"]
+						}
+					}
+				},
+				{
+					"name": "4. Approve Order - Triggers Stock Deduction (Pharmacist / Admin)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{pharmacist_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"approved\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/orders/{{order_id}}/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "orders", "{{order_id}}", "status"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
