@@ -1,0 +1,153 @@
+{
+  "info": {
+    "name": "Assignment 09 - Pharmacy API",
+    "_postman_id": "assignment-09-pharmacy-api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5001" },
+    { "key": "customerToken", "value": "" },
+    { "key": "pharmacistToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "medicineId", "value": "" },
+    { "key": "orderId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"name\":\"Customer One\",\"email\":\"customer@example.com\",\"password\":\"password123\"}" },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Register Pharmacist",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"name\":\"Pharmacist One\",\"email\":\"pharmacist@example.com\",\"password\":\"password123\",\"role\":\"pharmacist\",\"adminKey\":\"admin123\"}" },
+            "url": "{{baseUrl}}/api/auth/register-staff"
+          }
+        },
+        {
+          "name": "Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"name\":\"Admin One\",\"email\":\"admin@example.com\",\"password\":\"password123\",\"role\":\"admin\",\"adminKey\":\"admin123\"}" },
+            "url": "{{baseUrl}}/api/auth/register-staff"
+          }
+        },
+        {
+          "name": "Login Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"customer@example.com\",\"password\":\"password123\"}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login Pharmacist",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"pharmacist@example.com\",\"password\":\"password123\"}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"admin@example.com\",\"password\":\"password123\"}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Medicines",
+      "item": [
+        {
+          "name": "Get Medicines",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/medicines"
+          }
+        },
+        {
+          "name": "Add Medicine - Pharmacist",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pharmacistToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"name\":\"Amoxicillin\",\"brand\":\"Demo Pharma\",\"category\":\"Antibiotic\",\"dosageForm\":\"Capsule\",\"price\":120,\"stockQuantity\":20,\"requiresPrescription\":true,\"expiryDate\":\"2027-12-31\"}" },
+            "url": "{{baseUrl}}/api/medicines"
+          }
+        },
+        {
+          "name": "Expiring Medicines",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{pharmacistToken}}" }],
+            "url": "{{baseUrl}}/api/medicines/expiring"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Place Order - Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"items\":[{\"medicine\":\"{{medicineId}}\",\"quantity\":2}],\"prescriptionNotes\":\"Prescription verified for assignment testing\"}" },
+            "url": "{{baseUrl}}/api/orders"
+          }
+        },
+        {
+          "name": "Get My Orders - Customer",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": "{{baseUrl}}/api/orders/my-orders"
+          }
+        },
+        {
+          "name": "Get All Orders - Pharmacist",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{pharmacistToken}}" }],
+            "url": "{{baseUrl}}/api/orders"
+          }
+        },
+        {
+          "name": "Approve Order - Pharmacist",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pharmacistToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"status\":\"approved\"}" },
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/status"
+          }
+        }
+      ]
+    }
+  ]
+}
