@@ -2,6 +2,8 @@
 
 > **Student Name:** Prince Yadav  
 > **Student ID:** 150096725032  
+> **Live Render Deployment Link:** [https://assignment-9-pharmacy-management-api-ojsh.onrender.com](https://assignment-9-pharmacy-management-api-ojsh.onrender.com)  
+> **Postman Collection:** [`postman_collection.json`](./postman_collection.json)  
 > **Track:** Backend Development | **Level:** Intermediate  
 > **Tech Stack:** Node.js, Express.js, MongoDB Atlas, Mongoose, JWT, bcryptjs, dotenv, cors  
 

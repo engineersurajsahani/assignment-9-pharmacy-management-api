@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:5000",
+      "value": "https://assignment-9-pharmacy-management-api-ojsh.onrender.com",
       "type": "string"
     },
     {

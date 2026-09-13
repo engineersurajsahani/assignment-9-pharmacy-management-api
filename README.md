@@ -2,7 +2,7 @@
 
 > **Student Name:** Prince Yadav  
 > **Student ID / Roll No:** 150096725032  
-> **Live Render Deployment Link:** [https://pharmacy-management-api-prince.onrender.com](https://pharmacy-management-api-prince.onrender.com) *(Update with your active URL)*  
+> **Live Render Deployment Link:** [https://assignment-9-pharmacy-management-api-ojsh.onrender.com](https://assignment-9-pharmacy-management-api-ojsh.onrender.com)  
 > **Postman Collection:** [`prince yadav 150096725032/postman_collection.json`](./prince%20yadav%20150096725032/postman_collection.json)  
 > **Submission Folder:** [`prince yadav 150096725032/`](./prince%20yadav%20150096725032/)  
 > **Tech Stack:** Node.js, Express.js, MongoDB Atlas, Mongoose, JWT, bcryptjs, dotenv, cors  
