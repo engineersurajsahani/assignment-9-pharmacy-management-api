@@ -1,0 +1,269 @@
+openapi: 3.0.3
+info:
+  title: Pharmacy & Healthcare Store REST API
+  description: |
+    Pharmacy & Healthcare Store API with RBAC & JWT using Node.js, Express, MongoDB, and Mongoose.
+    
+    ### Author:
+    - **Name:** Samarth Navale
+    - **Roll No:** 150096725148
+    - **Cohort:** Sam Altman
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Local Server
+  - url: https://samarth-assignment-9-pharmacy-management.vercel.app
+    description: Vercel Production
+  - url: https://samarth-assignment-9-pharmacy-management-api.onrender.com
+    description: Render Production
+
+tags:
+  - name: Authentication
+  - name: Medicines
+  - name: Orders
+
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string, example: John Doe }
+                email: { type: string, example: john@med.com }
+                password: { type: string, example: password123 }
+      responses:
+        '201':
+          description: Registered
+
+  /api/auth/register-staff:
+    post:
+      tags:
+        - Authentication
+      summary: Register staff (Pharmacist / Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, role, adminSecretKey]
+              properties:
+                name: { type: string, example: Dr. Sarah }
+                email: { type: string, example: sarah@pharma.com }
+                password: { type: string, example: password123 }
+                role: { type: string, enum: [pharmacist, admin], example: pharmacist }
+                adminSecretKey: { type: string, example: admin_staff_secret_key_123 }
+      responses:
+        '201':
+          description: Staff registered
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, example: john@med.com }
+                password: { type: string, example: password123 }
+      responses:
+        '200':
+          description: Login successful with JWT
+
+  /api/auth/profile:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile
+
+  /api/medicines:
+    get:
+      tags:
+        - Medicines
+      summary: List medicines with search & category filter
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: category
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of medicines
+    post:
+      tags:
+        - Medicines
+      summary: Add new medicine (Pharmacist / Admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, brand, category, dosageForm, price, stockQuantity, expiryDate]
+              properties:
+                name: { type: string, example: Amoxicillin }
+                brand: { type: string, example: Moxatag }
+                category: { type: string, example: Antibiotic }
+                dosageForm: { type: string, enum: [Tablet, Capsule, Syrup, Injection], example: Capsule }
+                price: { type: number, example: 250 }
+                stockQuantity: { type: integer, example: 100 }
+                requiresPrescription: { type: boolean, example: true }
+                expiryDate: { type: string, format: date-time, example: '2026-12-31T00:00:00.000Z' }
+      responses:
+        '201':
+          description: Medicine added
+
+  /api/medicines/expiring:
+    get:
+      tags:
+        - Medicines
+      summary: Query expiring drugs in next 30 days
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Expiring medicines
+
+  /api/medicines/{id}:
+    get:
+      tags:
+        - Medicines
+      summary: Get medicine details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Medicine details
+    put:
+      tags:
+        - Medicines
+      summary: Update medicine stock/price (Pharmacist / Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Medicine updated
+    delete:
+      tags:
+        - Medicines
+      summary: Delete medicine (Admin Only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Medicine deleted
+
+  /api/orders:
+    post:
+      tags:
+        - Orders
+      summary: Place an order (Customer)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      medicine: { type: string }
+                      quantity: { type: integer }
+                prescriptionNotes: { type: string, example: Prescription attached #123 }
+      responses:
+        '201':
+          description: Order placed
+    get:
+      tags:
+        - Orders
+      summary: List all orders (Pharmacist / Admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of orders
+
+  /api/orders/my-orders:
+    get:
+      tags:
+        - Orders
+      summary: View customer order history
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Customer order history
+
+  /api/orders/{id}/status:
+    patch:
+      tags:
+        - Orders
+      summary: Update order status & trigger stock deduction (Pharmacist / Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [pending, approved, dispensed, cancelled], example: approved }
+      responses:
+        '200':
+          description: Order status updated
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
