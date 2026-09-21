@@ -1,8 +1,10 @@
 # 💊 Assignment 09: Pharmacy & Healthcare Store API with RBAC & JWT
 
 **Name:** Rishi Thakker
-**Roll No:** 068
-**Cohort:** [Cohort]
+**Roll No:** 150096725068
+**Cohort:** Sam Altman
+
+**Deployed Link:** https://assignment-9-pharmacy-management-api-p7bq.onrender.com/
 
 Backend for a Pharmacy Management & Medicine Ordering system built with **Node.js, Express, MongoDB Atlas/Mongoose, and JWT-based Role-Based Access Control** across three roles: `customer`, `pharmacist`, `admin`.
 
@@ -12,33 +14,6 @@ Backend for a Pharmacy Management & Medicine Ordering system built with **Node.j
 - Medicine catalog with search/category filtering and an "expiring in 30 days" report
 - Order placement with live stock and prescription-requirement validation
 - Atomic stock deduction the moment an order is approved (never double-deducts on re-save)
-
-## Setup
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Run in dev mode (auto-restart)
-npm run dev
-
-# or run normally
-npm start
-```
-
-MongoDB connection is configured directly in `config/db.js`.
-
-## Authentication & Roles
-Auth uses **JWT**, not sessions. After logging in, copy the returned `token` and send it on every
-protected route as a request header:
-
-```
-token: <your JWT>
-```
-
-Every account starts as `customer` via `/api/auth/register`. To create a `pharmacist` or `admin`
-account, use `/api/auth/register-staff` and pass the shared `adminKey` (set in `router/router.js`
-as `STAFF_SECRET_KEY`) — change this before you submit if it needs to stay private.
 
 ## API Endpoints
 
@@ -67,15 +42,6 @@ as `STAFF_SECRET_KEY`) — change this before you submit if it needs to stay pri
 | GET | `/api/orders` | Pharmacist / Admin | List all orders. Query: `?status=` |
 | PATCH | `/api/orders/:id/status` | Pharmacist / Admin | Update status (`approved` triggers stock deduction) |
 
-## Testing Checklist (from assignment spec)
-1. Create a customer, a pharmacist, and an admin user (pharmacist/admin via `/register-staff` + admin key).
-2. Try adding a medicine with the customer's token → expect `403 Forbidden`.
-3. Add a medicine using the pharmacist's token.
-4. Place an order as the customer, then set its status to `approved` as the pharmacist — confirm the medicine's `stockQuantity` decrements automatically.
-
-Import the routes above into Postman — send the JWT `token` as a plain header named `token`
-(not `Authorization: Bearer`) on every protected request, and keep three separate
-requests/environments for the customer, pharmacist, and admin tokens.
 
 ## Folder Structure
 ```text
