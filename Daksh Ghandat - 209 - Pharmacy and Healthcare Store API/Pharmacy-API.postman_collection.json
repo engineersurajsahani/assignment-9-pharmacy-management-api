@@ -1,0 +1,372 @@
+{
+  "info": {
+    "_postman_id": "f3a9b8c7-1111-4222-8333-444455556666",
+    "name": "Pharmacy & Healthcare Store API",
+    "description": "Assignment 09 - Pharmacy Management & Medicine Ordering REST API with RBAC and JWT. Base URL: http://localhost:5055",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "1. Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/auth/register",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Public. Always creates a CUSTOMER account."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Register Pharmacist (ADMIN_KEY)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pharmacist One\",\n  \"email\": \"pharmacist@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"pharmacist\",\n  \"adminKey\": \"your_secret_admin_key\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/auth/register-staff",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "auth", "register-staff"]
+            },
+            "description": "Requires ADMIN_KEY from .env"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Register Admin (ADMIN_KEY)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin One\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"admin\",\n  \"adminKey\": \"your_secret_admin_key\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/auth/register-staff",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "auth", "register-staff"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/auth/login",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Copy the returned token and set it in your Authorization header: Bearer <token>"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Get Profile (AUTH)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "http://localhost:5055/api/auth/profile",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Authenticated only. Never returns password."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "MEDICINES",
+      "item": [
+        {
+          "name": "1. Browse Medicines (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5055/api/medicines?search=&category=",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "medicines"],
+              "query": [
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Expiring Medicines (pharmacist/admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{staff_token}}" }],
+            "url": {
+              "raw": "http://localhost:5055/api/medicines/expiring",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "medicines", "expiring"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Add Medicine (pharmacist/admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{staff_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Paracetamol\",\n  \"brand\": \"ABC Pharma\",\n  \"category\": \"Analgesic\",\n  \"dosageForm\": \"Tablet\",\n  \"price\": 50,\n  \"stockQuantity\": 100,\n  \"requiresPrescription\": false,\n  \"expiryDate\": \"2027-12-31\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/medicines",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "medicines"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Update Medicine (pharmacist/admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{staff_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 55,\n  \"stockQuantity\": 120\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/medicines/:id",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "medicines", ":id"],
+              "variable": [{ "key": "id", "value": "MEDICINE_ID" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Delete Medicine (ADMIN only)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "http://localhost:5055/api/medicines/:id",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "medicines", ":id"],
+              "variable": [{ "key": "id", "value": "MEDICINE_ID" }]
+            },
+            "description": "Pharmacist receives 403."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ORDERS",
+      "item": [
+        {
+          "name": "1. Place Order (customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"medicine\": \"MEDICINE_ID\", \"quantity\": 5 }\n  ],\n  \"prescriptionNotes\": \"\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/orders",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "orders"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. My Orders (customer)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customer_token}}" }],
+            "url": {
+              "raw": "http://localhost:5055/api/orders/my-orders",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "orders", "my-orders"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. All Orders (pharmacist/admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{staff_token}}" }],
+            "url": {
+              "raw": "http://localhost:5055/api/orders?status=",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "orders"],
+              "query": [{ "key": "status", "value": "pending", "disabled": true }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Update Order Status (pharmacist/admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{staff_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/orders/:id/status",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "orders", ":id", "status"],
+              "variable": [{ "key": "id", "value": "ORDER_ID" }]
+            },
+            "description": "Allowed chain: pending -> approved -> dispensed, pending -> cancelled. Approving deducts stock."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REPORTS (bonus)",
+      "item": [
+        {
+          "name": "Low Stock (pharmacist/admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{staff_token}}" }],
+            "url": {
+              "raw": "http://localhost:5055/api/reports/low-stock?threshold=10",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "reports", "low-stock"],
+              "query": [{ "key": "threshold", "value": "10" }]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "NEGATIVE TESTS (must fail)",
+      "item": [
+        {
+          "name": "Customer tries Add Medicine (EXPECT 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Hack\",\n  \"brand\": \"Hack\",\n  \"category\": \"Hack\",\n  \"dosageForm\": \"Tablet\",\n  \"price\": 10,\n  \"stockQuantity\": 10,\n  \"expiryDate\": \"2027-12-31\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/medicines",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "medicines"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Customer tries Approve Order (EXPECT 403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/orders/:id/status",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "orders", ":id", "status"],
+              "variable": [{ "key": "id", "value": "ORDER_ID" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Pharmacist tries Delete Medicine (EXPECT 403)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{staff_token}}" }],
+            "url": {
+              "raw": "http://localhost:5055/api/medicines/:id",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "medicines", ":id"],
+              "variable": [{ "key": "id", "value": "MEDICINE_ID" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve same order twice (EXPECT 400)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{staff_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5055/api/orders/:id/status",
+              "host": ["http://localhost:5055"],
+              "path": ["api", "orders", ":id", "status"],
+              "variable": [{ "key": "id", "value": "ORDER_ID" }]
+            },
+            "description": "After an order is already approved, approving again returns 400 and stock stays deducted once."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5055" },
+    { "key": "customer_token", "value": "" },
+    { "key": "staff_token", "value": "" },
+    { "key": "admin_token", "value": "" }
+  ]
+}
