@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Orders</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <h1>My Orders</h1>
+
+    <div id="nav"></div>
+
+    <br />
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Placed On</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Prescription Notes</th>
+          <th>Status</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="order-rows"></tbody>
+    </table>
+
+    <script>
+      function loadOrders() {
+        callApi("/orders/my-orders")
+          .then(({ response, data }) => {
+            console.log(data);
+            if (handleUnauthorized(response, data)) return;
+            if (response.status !== 200) {
+              showError(data.message || "could not load orders!");
+              return;
+            }
+
+            const rows = document.getElementById("order-rows");
+            rows.innerHTML = "";
+
+            if (data.count === 0) {
+              rows.innerHTML = `<tr><td colspan="6">no orders yet</td></tr>`;
+            }
+
+            data.orders.forEach((order) => {
+              const tr = document.createElement("tr");
+              addCells(tr, [
+                formatDate(order.createdAt),
+                order.items.map((item) => `${item.name} x ${item.quantity}`).join(", "),
+                rupees(order.totalAmount),
+                order.prescriptionNotes || "-",
+                order.status,
+              ]);
+              const td = document.createElement("td");
+              if (order.status === "pending") {
+                td.appendChild(
+                  makeButton("CANCEL", () =>
+                    runAction(`/orders/${order._id}/cancel`, "PATCH", null, "order cancelled", loadOrders),
+                  ),
+                );
+              }
+              tr.appendChild(td);
+              rows.appendChild(tr);
+            });
+          })
+          .catch((error) => {
+            console.log(error);
+            showError("could not reach the server!");
+          });
+      }
+
+      if (requireRole("customer")) {
+        renderNav();
+        loadOrders();
+      }
+    </script>
+  </body>
+</html>

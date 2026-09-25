@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medicine Form</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <h1 id="heading">Add Medicine</h1>
+
+    <div>
+      <label for="name">Name : </label>
+      <input type="text" id="name" />
+    </div>
+
+    <div>
+      <label for="brand">Brand : </label>
+      <input type="text" id="brand" />
+    </div>
+
+    <div>
+      <label for="category">Category : </label>
+      <input type="text" id="category" placeholder="e.g. Antibiotic" />
+    </div>
+
+    <div>
+      <label for="dosageForm">Dosage Form : </label>
+      <select id="dosageForm">
+        <option value="Tablet">Tablet</option>
+        <option value="Capsule">Capsule</option>
+        <option value="Syrup">Syrup</option>
+        <option value="Injection">Injection</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="price">Price : </label>
+      <input type="number" id="price" min="0" step="0.01" />
+    </div>
+
+    <div>
+      <label for="stockQuantity">Stock Quantity : </label>
+      <input type="number" id="stockQuantity" min="0" />
+    </div>
+
+    <div>
+      <label for="expiryDate">Expiry Date : </label>
+      <input type="date" id="expiryDate" />
+    </div>
+
+    <div>
+      <input type="checkbox" id="requiresPrescription" />
+      <label for="requiresPrescription">Requires Prescription</label>
+    </div>
+
+    <br />
+
+    <div>
+      <button onclick="handleSubmit()">Save</button>
+      <button onclick="location.href = 'index.html'">Back</button>
+    </div>
+
+    <script>
+      const medicineId = new URLSearchParams(location.search).get("id");
+      const fields = ["name", "brand", "category", "dosageForm", "price", "stockQuantity"];
+
+      function loadMedicine() {
+        callApi(`/medicines/${medicineId}`)
+          .then(({ response, data }) => {
+            if (response.status !== 200) {
+              showError(data.message || "could not load medicine!");
+              return;
+            }
+            const medicine = data.medicine;
+            fields.forEach((field) => {
+              document.getElementById(field).value = medicine[field];
+            });
+            document.getElementById("expiryDate").value = medicine.expiryDate.slice(0, 10);
+            document.getElementById("requiresPrescription").checked = medicine.requiresPrescription;
+          })
+          .catch((error) => {
+            console.log(error);
+            showError("could not reach the server!");
+          });
+      }
+
+      function handleSubmit() {
+        const body = {
+          name: document.getElementById("name").value,
+          brand: document.getElementById("brand").value,
+          category: document.getElementById("category").value,
+          dosageForm: document.getElementById("dosageForm").value,
+          price: Number(document.getElementById("price").value),
+          stockQuantity: Number(document.getElementById("stockQuantity").value),
+          expiryDate: document.getElementById("expiryDate").value,
+          requiresPrescription: document.getElementById("requiresPrescription").checked,
+        };
+
+        const path = medicineId ? `/medicines/${medicineId}` : "/medicines";
+        const method = medicineId ? "PUT" : "POST";
+
+        callApi(path, method, body)
+          .then(({ response, data }) => {
+            console.log(data);
+            if (handleUnauthorized(response, data)) return;
+
+            if (response.status === 200 || response.status === 201) {
+              showSuccess(medicineId ? "medicine updated" : "medicine added").then(() => {
+                location.href = "index.html";
+              });
+            } else {
+              showError(data.message || "Something went wrong!");
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            showError("could not reach the server!");
+          });
+      }
+
+      if (requireRole("pharmacist", "admin") && medicineId) {
+        document.getElementById("heading").textContent = "Edit Medicine";
+        loadMedicine();
+      }
+    </script>
+  </body>
+</html>

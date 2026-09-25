@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Cart</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <h1>My Cart</h1>
+
+    <div id="nav"></div>
+
+    <br />
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Medicine</th>
+          <th>Unit Price</th>
+          <th>Quantity</th>
+          <th>Item Total</th>
+          <th>Prescription</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="cart-rows"></tbody>
+    </table>
+
+    <p>Total : <b id="total">-</b></p>
+
+    <div id="notes-box" hidden>
+      <label for="prescriptionNotes">Prescription Notes (doctor, date, details) : </label>
+      <br />
+      <textarea id="prescriptionNotes" rows="3" cols="50"></textarea>
+    </div>
+
+    <br />
+
+    <button id="order-btn" onclick="placeOrder()">PLACE ORDER</button>
+
+    <script>
+      function loadCart() {
+        const cart = getCart();
+        const rows = document.getElementById("cart-rows");
+        rows.innerHTML = "";
+
+        if (cart.length === 0) {
+          rows.innerHTML = `<tr><td colspan="6">cart is empty</td></tr>`;
+        }
+
+        cart.forEach((item, index) => {
+          const tr = document.createElement("tr");
+          addCells(tr, [
+            item.name,
+            rupees(item.price),
+            item.quantity,
+            rupees(item.price * item.quantity),
+            item.requiresPrescription ? "required" : "no",
+          ]);
+          const td = document.createElement("td");
+          td.appendChild(
+            makeButton("REMOVE", () => {
+              cart.splice(index, 1);
+              saveCart(cart);
+              loadCart();
+            }),
+          );
+          tr.appendChild(td);
+          rows.appendChild(tr);
+        });
+
+        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        document.getElementById("total").textContent = rupees(total);
+        document.getElementById("notes-box").hidden = !cart.some((item) => item.requiresPrescription);
+        document.getElementById("order-btn").disabled = cart.length === 0;
+      }
+
+      function placeOrder() {
+        const body = {
+          items: getCart().map((item) => ({ medicine: item.medicine, quantity: item.quantity })),
+          prescriptionNotes: document.getElementById("prescriptionNotes").value,
+        };
+
+        callApi("/orders", "POST", body)
+          .then(({ response, data }) => {
+            console.log(data);
+            if (handleUnauthorized(response, data)) return;
+
+            if (response.status === 201) {
+              saveCart([]);
+              showSuccess(`order placed, total ${rupees(data.order.totalAmount)}`).then(() => {
+                location.href = "my-orders.html";
+              });
+            } else {
+              showError(data.message || "could not place order!");
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            showError("could not reach the server!");
+          });
+      }
+
+      if (requireRole("customer")) {
+        renderNav();
+        loadCart();
+      }
+    </script>
+  </body>
+</html>
