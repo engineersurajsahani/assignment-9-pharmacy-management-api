@@ -1,0 +1,346 @@
+{
+  "info": {
+    "name": "Assignment 09 - Pharmacy & Healthcare Store API",
+    "_postman_id": "pharmacy-api-pratik-swain-150096725184",
+    "description": "Postman collection demonstrating multi-role workflows across Admin, Pharmacist, and Customer tiers with JWT authentication and atomic inventory updates.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://assignment-9-pharmacy-management-api-ojsh.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "admin_key",
+      "value": "admin_secret_key_12345",
+      "type": "string"
+    },
+    {
+      "key": "customer_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pharmacist_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sample_medicine_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sample_order_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. System Health",
+      "item": [
+        {
+          "name": "API Root Info",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/"
+          }
+        },
+        {
+          "name": "Health Status & DB State",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication & RBAC Registration",
+      "item": [
+        {
+          "name": "Register Customer (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pratik Swain\",\n  \"email\": \"pratik.customer@example.com\",\n  \"password\": \"customer123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Register Pharmacist (Admin Key Required)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-admin-key", "value": "{{admin_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Jane Pharmacist\",\n  \"email\": \"jane.pharma@example.com\",\n  \"password\": \"pharma123\",\n  \"role\": \"Pharmacist\",\n  \"adminKey\": \"{{admin_key}}\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/register-staff"
+          }
+        },
+        {
+          "name": "Register Admin (Admin Key Required)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-admin-key", "value": "{{admin_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Super Admin\",\n  \"email\": \"super.admin@example.com\",\n  \"password\": \"admin123\",\n  \"role\": \"Admin\",\n  \"adminKey\": \"{{admin_key}}\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/register-staff"
+          }
+        },
+        {
+          "name": "Login Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@pharmacy.com\",\n  \"password\": \"customerPassword123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login Pharmacist",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pharmacist@pharmacy.com\",\n  \"password\": \"pharmaPassword123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@pharmacy.com\",\n  \"password\": \"adminPassword123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": "{{base_url}}/api/auth/profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Medicine Inventory",
+      "item": [
+        {
+          "name": "Browse Catalog (Public)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/medicines"
+          }
+        },
+        {
+          "name": "Search & Filter Medicines (?search & ?category)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/medicines?search=amox&category=Antibiotic"
+          }
+        },
+        {
+          "name": "Expiring Medicines Query (Pharmacist / Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{pharmacist_token}}" }
+            ],
+            "url": "{{base_url}}/api/medicines/expiring?days=30"
+          }
+        },
+        {
+          "name": "Reports Expiring Soon (Pharmacist / Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/reports/expiring-soon"
+          }
+        },
+        {
+          "name": "Add Medicine (Pharmacist / Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pharmacist_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cetirizine 10mg\",\n  \"brand\": \"Zyrtec\",\n  \"category\": \"Antihistamine\",\n  \"dosageForm\": \"Tablet\",\n  \"price\": 12.0,\n  \"stockQuantity\": 60,\n  \"requiresPrescription\": false,\n  \"expiryDate\": \"2027-01-01T00:00:00.000Z\"\n}"
+            },
+            "url": "{{base_url}}/api/medicines"
+          }
+        },
+        {
+          "name": "Update Stock / Price (Pharmacist / Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pharmacist_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 14.5,\n  \"stockQuantity\": 75\n}"
+            },
+            "url": "{{base_url}}/api/medicines/{{sample_medicine_id}}"
+          }
+        },
+        {
+          "name": "Delete Medicine (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/medicines/{{sample_medicine_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Orders & Prescriptions",
+      "item": [
+        {
+          "name": "Place Order (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"medicine\": \"{{sample_medicine_id}}\",\n      \"quantity\": 2\n    }\n  ],\n  \"prescriptionNotes\": \"Doctor prescription uploaded: Dr. Smith Rx #98721\"\n}"
+            },
+            "url": "{{base_url}}/api/orders"
+          }
+        },
+        {
+          "name": "Get Customer Orders (Customer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "url": "{{base_url}}/api/orders/my-orders"
+          }
+        },
+        {
+          "name": "Get All Orders (Pharmacist / Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{pharmacist_token}}" }
+            ],
+            "url": "{{base_url}}/api/orders?status=pending"
+          }
+        },
+        {
+          "name": "Approve Order (Atomic Stock Decrement)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{pharmacist_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": "{{base_url}}/api/orders/{{sample_order_id}}/status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. RBAC Security Tests (Verify 403 Forbidden)",
+      "item": [
+        {
+          "name": "Customer Tries to Add Medicine (Expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Unauthorized Med\",\n  \"brand\": \"Fake\",\n  \"category\": \"General\",\n  \"dosageForm\": \"Tablet\",\n  \"price\": 10,\n  \"stockQuantity\": 10,\n  \"expiryDate\": \"2027-01-01\"\n}"
+            },
+            "url": "{{base_url}}/api/medicines"
+          }
+        },
+        {
+          "name": "Pharmacist Tries to Delete Medicine (Expect 403)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{pharmacist_token}}" }
+            ],
+            "url": "{{base_url}}/api/medicines/{{sample_medicine_id}}"
+          }
+        },
+        {
+          "name": "Customer Tries to Approve Order (Expect 403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customer_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": "{{base_url}}/api/orders/{{sample_order_id}}/status"
+          }
+        }
+      ]
+    }
+  ]
+}
