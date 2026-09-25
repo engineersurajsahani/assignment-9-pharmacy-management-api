@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pharmacy Store</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <h1>Pharmacy and Healthcare Store</h1>
+
+    <div id="nav"></div>
+
+    <br />
+
+    <div>
+      <label for="search">Search : </label>
+      <input type="text" id="search" placeholder="name, brand or category" />
+
+      <label for="category">Category : </label>
+      <select id="category">
+        <option value="">All</option>
+      </select>
+
+      <label for="dosageForm">Form : </label>
+      <select id="dosageForm">
+        <option value="">All</option>
+        <option value="Tablet">Tablet</option>
+        <option value="Capsule">Capsule</option>
+        <option value="Syrup">Syrup</option>
+        <option value="Injection">Injection</option>
+      </select>
+
+      <span id="expired-box" hidden>
+        <input type="checkbox" id="includeExpired" />
+        <label for="includeExpired">show expired</label>
+      </span>
+
+      <button onclick="loadMedicines()">SEARCH</button>
+      <button onclick="clearFilter()">SHOW ALL</button>
+      <span id="count"></span>
+    </div>
+
+    <br />
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Brand</th>
+          <th>Category</th>
+          <th>Form</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Prescription</th>
+          <th>Expiry</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="medicine-rows"></tbody>
+    </table>
+
+    <script>
+      const user = getUser();
+
+      function loadCategories() {
+        callApi("/medicines/categories")
+          .then(({ data }) => {
+            const select = document.getElementById("category");
+            (data.categories || []).forEach((category) => {
+              const option = document.createElement("option");
+              option.value = category;
+              option.textContent = category;
+              select.appendChild(option);
+            });
+          })
+          .catch((error) => console.log(error));
+      }
+
+      function addToCart(medicine, quantity) {
+        if (!Number.isInteger(quantity) || quantity < 1) {
+          showError("quantity must be at least 1!");
+          return;
+        }
+        const cart = getCart();
+        const existing = cart.find((item) => item.medicine === medicine._id);
+        const total = (existing ? existing.quantity : 0) + quantity;
+        if (total > medicine.stockQuantity) {
+          showError(`only ${medicine.stockQuantity} left in stock!`);
+          return;
+        }
+        if (existing) {
+          existing.quantity = total;
+        } else {
+          cart.push({
+            medicine: medicine._id,
+            name: medicine.name,
+            price: medicine.price,
+            requiresPrescription: medicine.requiresPrescription,
+            quantity,
+          });
+        }
+        saveCart(cart);
+        showSuccess(`${medicine.name} added to cart`);
+      }
+
+      function actionCell(medicine) {
+        const td = document.createElement("td");
+
+        if (user && user.role === "customer") {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "1";
+          input.value = "1";
+          input.style.width = "50px";
+          td.appendChild(input);
+          td.appendChild(
+            makeButton(
+              "ADD TO CART",
+              () => addToCart(medicine, Number(input.value)),
+              medicine.stockQuantity === 0 || medicine.isExpired,
+            ),
+          );
+        }
+
+        if (isStaff(user)) {
+          td.appendChild(
+            makeButton("EDIT", () => {
+              location.href = `medicine-form.html?id=${medicine._id}`;
+            }),
+          );
+        }
+
+        if (user && user.role === "admin") {
+          td.appendChild(
+            makeButton("DELETE", () => {
+              Swal.fire({
+                icon: "warning",
+                title: `Delete ${medicine.name}?`,
+                showCancelButton: true,
+                confirmButtonText: "Delete",
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  runAction(`/medicines/${medicine._id}`, "DELETE", null, "medicine deleted", loadMedicines);
+                }
+              });
+            }),
+          );
+        }
+
+        if (!user) td.textContent = "login to order";
+        return td;
+      }
+
+      function loadMedicines() {
+        const params = new URLSearchParams();
+        const search = document.getElementById("search").value.trim();
+        const category = document.getElementById("category").value;
+        const dosageForm = document.getElementById("dosageForm").value;
+        if (search) params.set("search", search);
+        if (category) params.set("category", category);
+        if (dosageForm) params.set("dosageForm", dosageForm);
+        if (document.getElementById("includeExpired").checked) params.set("includeExpired", "true");
+
+        callApi(`/medicines?${params}`)
+          .then(({ response, data }) => {
+            console.log(data);
+            if (response.status !== 200) {
+              showError(data.message || "could not load medicines!");
+              return;
+            }
+
+            document.getElementById("count").textContent = `${data.count} medicine(s)`;
+            const rows = document.getElementById("medicine-rows");
+            rows.innerHTML = "";
+
+            if (data.count === 0) {
+              rows.innerHTML = `<tr><td colspan="9">no medicines found</td></tr>`;
+            }
+
+            data.medicines.forEach((medicine) => {
+              const tr = document.createElement("tr");
+              addCells(tr, [
+                medicine.name,
+                medicine.brand,
+                medicine.category,
+                medicine.dosageForm,
+                rupees(medicine.price),
+                medicine.stockQuantity === 0 ? "out of stock" : medicine.stockQuantity,
+                medicine.requiresPrescription ? "required" : "no",
+                medicine.isExpired ? `EXPIRED ${formatDate(medicine.expiryDate)}` : formatDate(medicine.expiryDate),
+              ]);
+              tr.appendChild(actionCell(medicine));
+              rows.appendChild(tr);
+            });
+          })
+          .catch((error) => {
+            console.log(error);
+            showError("could not reach the server!");
+          });
+      }
+
+      function clearFilter() {
+        document.getElementById("search").value = "";
+        document.getElementById("category").value = "";
+        document.getElementById("dosageForm").value = "";
+        document.getElementById("includeExpired").checked = false;
+        loadMedicines();
+      }
+
+      document.getElementById("expired-box").hidden = !isStaff(user);
+      renderNav();
+      loadCategories();
+      loadMedicines();
+    </script>
+  </body>
+</html>

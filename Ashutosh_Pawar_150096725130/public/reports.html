@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <h1>Reports</h1>
+
+    <div id="nav"></div>
+
+    <h3>Expiring Soon</h3>
+
+    <div>
+      <label for="days">Within days : </label>
+      <input type="number" id="days" min="1" max="365" value="30" style="width: 60px" />
+      <input type="checkbox" id="includeExpired" />
+      <label for="includeExpired">include already expired</label>
+      <button onclick="loadExpiring()">CHECK</button>
+    </div>
+
+    <p id="expiring-summary"></p>
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Brand</th>
+          <th>Stock</th>
+          <th>Expiry</th>
+          <th>Days Left</th>
+          <th>Stock Value</th>
+        </tr>
+      </thead>
+      <tbody id="expiring-rows"></tbody>
+    </table>
+
+    <h3>Low Stock</h3>
+
+    <div>
+      <label for="threshold">Stock at or below : </label>
+      <input type="number" id="threshold" min="0" value="10" style="width: 60px" />
+      <button onclick="loadLowStock()">CHECK</button>
+      <span id="low-count"></span>
+    </div>
+
+    <br />
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Name</th>
+          <th>Brand</th>
+          <th>Form</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+      <tbody id="low-rows"></tbody>
+    </table>
+
+    <h3>Orders Summary</h3>
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Orders</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody id="summary-rows"></tbody>
+    </table>
+
+    <h4>Top Selling Medicines</h4>
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Units Sold</th>
+          <th>Revenue</th>
+        </tr>
+      </thead>
+      <tbody id="top-rows"></tbody>
+    </table>
+
+    <script>
+      function fillRows(id, list, colspan, toCells) {
+        const rows = document.getElementById(id);
+        rows.innerHTML = "";
+        if (list.length === 0) {
+          rows.innerHTML = `<tr><td colspan="${colspan}">nothing here</td></tr>`;
+        }
+        list.forEach((entry) => {
+          const tr = document.createElement("tr");
+          addCells(tr, toCells(entry));
+          rows.appendChild(tr);
+        });
+      }
+
+      function load(path, onData) {
+        callApi(path)
+          .then(({ response, data }) => {
+            console.log(data);
+            if (handleUnauthorized(response, data)) return;
+            if (response.status !== 200) {
+              showError(data.message || "could not load report!");
+              return;
+            }
+            onData(data);
+          })
+          .catch((error) => {
+            console.log(error);
+            showError("could not reach the server!");
+          });
+      }
+
+      function loadExpiring() {
+        const days = document.getElementById("days").value;
+        const includeExpired = document.getElementById("includeExpired").checked;
+
+        load(`/reports/expiring-soon?days=${days}&includeExpired=${includeExpired}`, (data) => {
+          const summary = data.summary;
+          document.getElementById("expiring-summary").textContent =
+            `${summary.count} medicine(s), ${summary.totalUnits} unit(s), ${rupees(summary.stockValueAtRisk)} at risk`;
+          fillRows("expiring-rows", data.medicines, 6, (medicine) => [
+            medicine.name,
+            medicine.brand,
+            medicine.stockQuantity,
+            formatDate(medicine.expiryDate),
+            medicine.daysLeft < 0 ? `expired ${-medicine.daysLeft} day(s) ago` : medicine.daysLeft,
+            rupees(medicine.stockValue),
+          ]);
+        });
+      }
+
+      function loadLowStock() {
+        const threshold = document.getElementById("threshold").value;
+
+        load(`/reports/low-stock?threshold=${threshold}`, (data) => {
+          document.getElementById("low-count").textContent = `${data.count} medicine(s)`;
+          const flat = data.categories.flatMap((group) =>
+            group.medicines.map((medicine) => ({ ...medicine, category: group.category })),
+          );
+          fillRows("low-rows", flat, 5, (medicine) => [
+            medicine.category,
+            medicine.name,
+            medicine.brand,
+            medicine.dosageForm,
+            medicine.stockQuantity,
+          ]);
+        });
+      }
+
+      function loadSummary() {
+        load("/reports/orders-summary", (data) => {
+          fillRows("summary-rows", data.byStatus, 3, (row) => [row.status, row.count, rupees(row.totalAmount)]);
+          fillRows("top-rows", data.topMedicines, 3, (row) => [row.name, row.unitsSold, rupees(row.revenue)]);
+        });
+      }
+
+      if (requireRole("pharmacist", "admin")) {
+        renderNav();
+        loadExpiring();
+        loadLowStock();
+        loadSummary();
+      }
+    </script>
+  </body>
+</html>

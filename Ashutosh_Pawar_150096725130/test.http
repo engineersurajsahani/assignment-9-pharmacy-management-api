@@ -1,0 +1,199 @@
+@base = http://localhost:3000/api
+@customerToken = PASTE_CUSTOMER_TOKEN
+@pharmacistToken = PASTE_PHARMACIST_TOKEN
+@adminToken = PASTE_ADMIN_TOKEN
+@medicineId = PASTE_MEDICINE_ID
+@orderId = PASTE_ORDER_ID
+
+### Register a customer
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Riya Customer",
+  "email": "riya@example.com",
+  "phone": "9876543210",
+  "password": "secret123"
+}
+
+### Register a pharmacist (needs ADMIN_KEY)
+POST {{base}}/auth/register-staff
+Content-Type: application/json
+
+{
+  "name": "Arjun Pharmacist",
+  "email": "arjun@example.com",
+  "password": "secret123",
+  "role": "pharmacist",
+  "adminKey": "change_me_staff_key"
+}
+
+### Register an admin (needs ADMIN_KEY)
+POST {{base}}/auth/register-staff
+Content-Type: application/json
+
+{
+  "name": "Meera Admin",
+  "email": "meera@example.com",
+  "password": "secret123",
+  "role": "admin",
+  "adminKey": "change_me_staff_key"
+}
+
+### Login (copy the token into the variables above)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "riya@example.com",
+  "password": "secret123"
+}
+
+### Profile
+GET {{base}}/auth/profile
+Authorization: Bearer {{customerToken}}
+
+### Browse medicines (search, category, dosageForm, requiresPrescription, includeExpired)
+GET {{base}}/medicines?search=para&category=Analgesic
+
+### Categories
+GET {{base}}/medicines/categories
+
+### One medicine
+GET {{base}}/medicines/{{medicineId}}
+
+### Add medicine as customer -> 403
+POST {{base}}/medicines
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "name": "Paracetamol",
+  "brand": "Crocin",
+  "category": "Analgesic",
+  "dosageForm": "Tablet",
+  "price": 2.5,
+  "stockQuantity": 100,
+  "expiryDate": "2028-12-31"
+}
+
+### Add medicine as pharmacist -> 201
+POST {{base}}/medicines
+Authorization: Bearer {{pharmacistToken}}
+Content-Type: application/json
+
+{
+  "name": "Paracetamol",
+  "brand": "Crocin",
+  "category": "Analgesic",
+  "dosageForm": "Tablet",
+  "price": 2.5,
+  "stockQuantity": 100,
+  "expiryDate": "2028-12-31"
+}
+
+### Add prescription medicine
+POST {{base}}/medicines
+Authorization: Bearer {{pharmacistToken}}
+Content-Type: application/json
+
+{
+  "name": "Amoxicillin",
+  "brand": "Mox",
+  "category": "Antibiotic",
+  "dosageForm": "Capsule",
+  "price": 12,
+  "stockQuantity": 8,
+  "requiresPrescription": true,
+  "expiryDate": "{{$datetime 'YYYY-MM-DD' 20 d}}"
+}
+
+### Update stock / price
+PUT {{base}}/medicines/{{medicineId}}
+Authorization: Bearer {{pharmacistToken}}
+Content-Type: application/json
+
+{
+  "price": 3,
+  "stockQuantity": 150
+}
+
+### Delete as pharmacist -> 403
+DELETE {{base}}/medicines/{{medicineId}}
+Authorization: Bearer {{pharmacistToken}}
+
+### Delete as admin
+DELETE {{base}}/medicines/{{medicineId}}
+Authorization: Bearer {{adminToken}}
+
+### Expiring in the next 30 days
+GET {{base}}/medicines/expiring?days=30
+Authorization: Bearer {{pharmacistToken}}
+
+### Low stock
+GET {{base}}/medicines/low-stock?threshold=10
+Authorization: Bearer {{pharmacistToken}}
+
+### Report: expiring soon
+GET {{base}}/reports/expiring-soon?days=60&includeExpired=true
+Authorization: Bearer {{adminToken}}
+
+### Report: orders summary
+GET {{base}}/reports/orders-summary
+Authorization: Bearer {{adminToken}}
+
+### Place an order (customer)
+POST {{base}}/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "items": [
+    { "medicine": "{{medicineId}}", "quantity": 10 }
+  ],
+  "prescriptionNotes": "Dr. Sharma, 24 Sep 2026"
+}
+
+### My orders
+GET {{base}}/orders/my-orders
+Authorization: Bearer {{customerToken}}
+
+### One order (owner or staff)
+GET {{base}}/orders/{{orderId}}
+Authorization: Bearer {{customerToken}}
+
+### Cancel my pending order
+PATCH {{base}}/orders/{{orderId}}/cancel
+Authorization: Bearer {{customerToken}}
+
+### All orders (staff)
+GET {{base}}/orders?status=pending
+Authorization: Bearer {{pharmacistToken}}
+
+### Approve order -> stock is deducted
+PATCH {{base}}/orders/{{orderId}}/status
+Authorization: Bearer {{pharmacistToken}}
+Content-Type: application/json
+
+{
+  "status": "approved",
+  "prescriptionVerified": true
+}
+
+### Dispense order
+PATCH {{base}}/orders/{{orderId}}/status
+Authorization: Bearer {{pharmacistToken}}
+Content-Type: application/json
+
+{
+  "status": "dispensed"
+}
+
+### Cancel an approved order -> stock is restored
+PATCH {{base}}/orders/{{orderId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "cancelled"
+}

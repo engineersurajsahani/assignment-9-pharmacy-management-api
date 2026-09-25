@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Orders</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <h1>All Orders</h1>
+
+    <div id="nav"></div>
+
+    <br />
+
+    <div>
+      <label for="status">Status : </label>
+      <select id="status" onchange="loadOrders()">
+        <option value="">All</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="dispensed">Dispensed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <span id="count"></span>
+    </div>
+
+    <br />
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Placed On</th>
+          <th>Customer</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Prescription Notes</th>
+          <th>Status</th>
+          <th>Handled By</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="order-rows"></tbody>
+    </table>
+
+    <script>
+      function setStatus(order, status) {
+        const needsPrescription = order.items.some((item) => item.requiresPrescription);
+
+        if (status === "approved" && needsPrescription) {
+          Swal.fire({
+            icon: "question",
+            title: "Prescription check",
+            text: `Notes: ${order.prescriptionNotes}. Have you verified the prescription?`,
+            showCancelButton: true,
+            confirmButtonText: "Verified, approve",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              runAction(
+                `/orders/${order._id}/status`,
+                "PATCH",
+                { status, prescriptionVerified: true },
+                "order approved, stock deducted",
+                loadOrders,
+              );
+            }
+          });
+          return;
+        }
+
+        runAction(`/orders/${order._id}/status`, "PATCH", { status }, `order ${status}`, loadOrders);
+      }
+
+      function loadOrders() {
+        const status = document.getElementById("status").value;
+
+        callApi(`/orders${status ? `?status=${status}` : ""}`)
+          .then(({ response, data }) => {
+            console.log(data);
+            if (handleUnauthorized(response, data)) return;
+            if (response.status !== 200) {
+              showError(data.message || "could not load orders!");
+              return;
+            }
+
+            document.getElementById("count").textContent = `${data.count} order(s)`;
+            const rows = document.getElementById("order-rows");
+            rows.innerHTML = "";
+
+            if (data.count === 0) {
+              rows.innerHTML = `<tr><td colspan="8">no orders</td></tr>`;
+            }
+
+            data.orders.forEach((order) => {
+              const tr = document.createElement("tr");
+              addCells(tr, [
+                formatDate(order.createdAt),
+                order.customer ? `${order.customer.name} (${order.customer.email})` : "-",
+                order.items
+                  .map((item) => `${item.name} x ${item.quantity}${item.requiresPrescription ? " (Rx)" : ""}`)
+                  .join(", "),
+                rupees(order.totalAmount),
+                order.prescriptionNotes || "-",
+                order.status,
+                order.handledBy ? `${order.handledBy.name} (${order.handledBy.role})` : "-",
+              ]);
+
+              const td = document.createElement("td");
+              if (order.status === "pending") {
+                td.appendChild(makeButton("APPROVE", () => setStatus(order, "approved")));
+              }
+              if (order.status === "approved") {
+                td.appendChild(makeButton("DISPENSE", () => setStatus(order, "dispensed")));
+              }
+              if (order.status === "pending" || order.status === "approved") {
+                td.appendChild(makeButton("CANCEL", () => setStatus(order, "cancelled")));
+              }
+              tr.appendChild(td);
+              rows.appendChild(tr);
+            });
+          })
+          .catch((error) => {
+            console.log(error);
+            showError("could not reach the server!");
+          });
+      }
+
+      if (requireRole("pharmacist", "admin")) {
+        renderNav();
+        loadOrders();
+      }
+    </script>
+  </body>
+</html>
