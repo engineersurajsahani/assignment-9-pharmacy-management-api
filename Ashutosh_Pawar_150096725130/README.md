@@ -10,6 +10,17 @@ the token first and then the role. Stock is taken off only when an order is
 approved, inside a MongoDB transaction, so stock can never go below zero. A
 plain HTML frontend in `public/` is served by the same server.
 
+## Live demo
+
+https://assignment-9-pharmacy-management-api-xyzk.onrender.com
+
+The UI and the API run as one Render web service on the free tier, with the
+data in MongoDB Atlas. The first visit after a period of inactivity can take up
+to a minute while the server wakes up. Deployed with root directory
+`Ashutosh_Pawar_150096725130`, build `npm install`, start `npm start`, and
+`MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN` and `ADMIN_KEY` set in the Render
+environment.
+
 ## Tech stack
 
 - Node.js, Express 5
