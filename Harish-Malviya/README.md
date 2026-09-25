@@ -90,7 +90,7 @@ A production-ready **Pharmacy Management & Medicine Ordering REST API** featurin
 PORT=5000
 NODE_ENV=development
 MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/pharmacy_db?retryWrites=true&w=majority
-JWT_SECRET=super_secret_pharmacy_jwt_key_pratik_swain_2026
+JWT_SECRET=super_secret_pharmacy_jwt_key_Harish_Malviya_2026
 JWT_EXPIRE=7d
 ADMIN_REGISTRATION_KEY=admin_secret_key_12345
 ```
