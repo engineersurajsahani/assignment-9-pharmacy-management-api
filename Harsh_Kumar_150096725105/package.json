@@ -1,0 +1,32 @@
+{
+  "name": "harsh-assignment-9-pharmacy-management-api",
+  "version": "1.0.0",
+  "description": "> **Track:** Backend Development | **Level:** Intermediate | **Estimated Time:** 6–8 Hours   > **Tech Stack:** Node.js, Express.js, MongoDB Atlas, Mongoose, JWT, bcryptjs, dotenv",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js", "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harsh4421/Harsh-Assignment-9-pharmacy-Management-Api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/harsh4421/Harsh-Assignment-9-pharmacy-Management-Api/issues"
+  },
+  "homepage": "https://github.com/harsh4421/Harsh-Assignment-9-pharmacy-Management-Api#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.10.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
